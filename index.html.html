@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌿 小食厨记 · 点餐工作台</title>
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-dark: #1b5e20;
+            --primary-light: #e8f5e9;
+            --secondary: #1e3a2f;
+            --accent: #43a047;
+            --danger: #e53935;
+            --warning: #f9a825;
+            --bg: #f4faf5;
+            --card-bg: #ffffff;
+            --text: #1e3a2f;
+            --text-light: #5c7a6b;
+            --border: #dcedc8;
+            --shadow: 0 2px 12px rgba(46, 125, 50, 0.08);
+            --shadow-lg: 0 8px 30px rgba(46, 125, 50, 0.12);
+            --radius: 14px;
+            --radius-sm: 8px;
+            --radius-lg: 20px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+        }
+
+        .header {
+            background: var(--card-bg);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid var(--primary);
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-logo {
+            font-size: 32px;
+            line-height: 1;
+        }
+        .header-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            letter-spacing: 0.5px;
+        }
+        .header-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 1px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .balance-display {
+            background: var(--primary-light);
+            border: 2px solid var(--primary);
+            border-radius: 30px;
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .balance-display .balance-icon {
+            font-size: 1.2rem;
+        }
+        .balance-display .balance-amount {
+            color: var(--accent);
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+        .mode-switch {
+            display: flex;
+            gap: 6px;
+            background: var(--bg);
+            padding: 4px;
+            border-radius: 30px;
+            border: 2px solid var(--border);
+        }
+        .mode-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: transparent;
+            color: var(--text-light);
+            transition: var(--transition);
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .mode-btn:hover {
+            color: var(--text);
+            background: rgba(46, 125, 50, 0.08);
+        }
+        .mode-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.35);
+        }
+        .mode-btn.manage-active {
+            background: var(--secondary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(30, 58, 47, 0.3);
+        }
+        .mode-btn.order-history-active {
+            background: #6d4c41;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(109, 76, 65, 0.3);
+        }
+
+        .main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 16px 16px 120px;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .view { display: none; }
+        .view.active { display: block; }
+
+        .category-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 4px 14px;
+            scrollbar-width: thin;
+            -webkit-overflow-scrolling: touch;
+            flex-wrap: nowrap;
+        }
+        .cat-btn {
+            padding: 9px 18px;
+            border: 2px solid var(--border);
+            border-radius: 30px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--card-bg);
+            color: var(--text);
+            transition: var(--transition);
+            white-space: nowrap;
+            flex-shrink: 0;
+            letter-spacing: 0.3px;
+        }
+        .cat-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+        .cat-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 3px 10px rgba(46, 125, 50, 0.3);
+        }
+        .cat-btn .cat-count {
+            font-size: 0.72rem;
+            opacity: 0.7;
+            margin-left: 4px;
+            font-weight: 400;
+        }
+
+        .dish-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 14px;
+            padding-top: 4px;
+        }
+        @media (max-width: 500px) {
+            .dish-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 10px; }
+        }
+        .dish-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 150px;
+        }
+        .dish-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+        .dish-card:active { transform: scale(0.97); transition-duration: 0.1s; }
+        .dish-emoji { font-size: 2.8rem; line-height: 1.2; margin-bottom: 2px; }
+        .dish-name { font-size: 1.05rem; font-weight: 700; color: var(--text); line-height: 1.3; }
+        .dish-desc {
+            font-size: 0.82rem; color: var(--text-light); line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; flex-grow: 1;
+        }
+        .dish-price { font-size: 1.25rem; font-weight: 800; color: var(--primary-dark); letter-spacing: 0.5px; }
+        .dish-price::before { content: '¥'; font-size: 0.85rem; margin-right: 2px; font-weight: 600; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); }
+        .empty-state .empty-icon { font-size: 5rem; margin-bottom: 16px; }
+        .empty-state h3 { font-size: 1.3rem; color: var(--text); margin-bottom: 8px; }
+        .empty-state p { font-size: 0.95rem; line-height: 1.6; max-width: 400px; margin: 0 auto; }
+        .empty-state .btn { margin-top: 20px; }
+
+        .btn {
+            padding: 10px 22px; border: none; border-radius: 30px; font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; transition: var(--transition); letter-spacing: 0.3px;
+            display: inline-flex; align-items: center; gap: 6px; font-family: var(--font); line-height: 1.4;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 3px 12px rgba(46, 125, 50, 0.35); }
+        .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 5px 18px rgba(46, 125, 50, 0.45); }
+        .btn-secondary { background: var(--secondary); color: #fff; box-shadow: 0 3px 12px rgba(30, 58, 47, 0.25); }
+        .btn-secondary:hover { background: #0c1f16; }
+        .btn-outline { background: transparent; color: var(--primary); border: 2px solid var(--primary); }
+        .btn-outline:hover { background: var(--primary-light); border-color: var(--primary-dark); color: var(--primary-dark); }
+        .btn-danger { background: var(--danger); color: #fff; box-shadow: 0 3px 12px rgba(229, 57, 53, 0.3); }
+        .btn-danger:hover { background: #c62828; }
+        .btn-sm { padding: 6px 14px; font-size: 0.8rem; border-radius: 20px; }
+        .btn-xs { padding: 4px 10px; font-size: 0.72rem; border-radius: 16px; font-weight: 500; }
+
+        .cart-bar {
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            background: var(--secondary); color: #fff; border-radius: 50px; padding: 10px 22px;
+            display: flex; align-items: center; gap: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.25);
+            cursor: pointer; z-index: 200; transition: var(--transition); max-width: 90vw; min-width: 200px;
+            justify-content: center; border: 2px solid rgba(255,255,255,0.15);
+        }
+        .cart-bar:hover { transform: translateX(-50%) translateY(-2px); box-shadow: 0 12px 35px rgba(0,0,0,0.3); }
+        .cart-bar .cart-icon { font-size: 1.4rem; position: relative; }
+        .cart-bar .cart-count-badge {
+            position: absolute; top: -8px; right: -10px; background: var(--danger); color: #fff;
+            font-size: 0.7rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; border: 2px solid #fff;
+        }
+        .cart-bar .cart-total { font-weight: 700; font-size: 1.15rem; color: #a5d6a7; }
+        .cart-bar .cart-total::before { content: '¥'; font-size: 0.85rem; margin-right: 1px; }
+        .cart-bar .cart-label { font-size: 0.85rem; opacity: 0.8; }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500;
+            display: flex; align-items: center; justify-content: center; animation: fadeInOverlay 0.2s ease; padding: 16px;
+        }
+        @keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+        .modal {
+            background: var(--card-bg); border-radius: var(--radius-lg); width: 100%; max-width: 480px;
+            max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease; padding: 24px;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .modal-title { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+        .modal-close {
+            background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-light);
+            padding: 4px 8px; border-radius: 50%; transition: var(--transition); line-height: 1;
+        }
+        .modal-close:hover { background: var(--border); color: var(--text); }
+        .modal-body { display: flex; flex-direction: column; gap: 14px; }
+
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text); letter-spacing: 0.3px; }
+        .form-group input, .form-group textarea, .form-group select {
+            padding: 11px 14px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 0.95rem; font-family: var(--font); transition: var(--transition); background: #fff;
+            color: var(--text); outline: none; -webkit-appearance: none; appearance: none;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: var(--primary); box-shadow: 0 0 0 3px rgba(46,125,50,0.12);
+        }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+        .form-row .form-group { flex: 1; min-width: 120px; }
+
+        .emoji-picker {
+            display: flex; flex-wrap: wrap; gap: 6px; max-height: 120px; overflow-y: auto;
+            padding: 4px; border: 2px solid var(--border); border-radius: var(--radius-sm); background: #f9fbe9;
+        }
+        .emoji-option {
+            font-size: 1.6rem; cursor: pointer; padding: 4px; border-radius: 6px; transition: var(--transition);
+            border: 2px solid transparent; background: none; line-height: 1; width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .emoji-option:hover { background: var(--primary-light); border-color: var(--primary); transform: scale(1.1); }
+        .emoji-option.selected { background: var(--primary); border-color: var(--primary-dark); box-shadow: 0 2px 8px rgba(46,125,50,0.3); }
+
+        .cart-items { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
+        .cart-item {
+            display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--bg);
+            border-radius: var(--radius-sm); border: 1px solid var(--border);
+        }
+        .cart-item .ci-emoji { font-size: 2rem; flex-shrink: 0; width: 40px; text-align: center; }
+        .cart-item .ci-info { flex: 1; min-width: 0; }
+        .cart-item .ci-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cart-item .ci-price { font-size: 0.82rem; color: var(--text-light); }
+        .cart-item .ci-controls { display: flex; align-items: center; gap: 8px; }
+        .ci-controls button {
+            width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border); background: #fff;
+            font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: var(--transition); color: var(--text); font-weight: 700; line-height: 1; padding: 0;
+        }
+        .ci-controls button:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        .ci-controls .ci-qty { font-weight: 700; font-size: 1rem; min-width: 24px; text-align: center; }
+        .ci-controls .ci-remove { background: #fff; border-color: #ffcdd2; color: var(--danger); font-size: 0.8rem; width: 30px; height: 30px; }
+        .ci-controls .ci-remove:hover { background: #fef2f2; border-color: var(--danger); color: var(--danger); }
+
+        .cart-summary { display: flex; justify-content: space-between; align-items: center; padding-top: 14px; border-top: 2px solid var(--border); font-weight:700; font-size:1.1rem; }
+        .cart-summary .total-amount { color: var(--primary-dark); font-size: 1.4rem; }
+        .cart-summary .total-amount::before { content: '¥'; font-size: 0.9rem; }
+
+        .manage-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+        .manage-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+        .manage-list { display: flex; flex-direction: column; gap: 10px; }
+        .manage-item {
+            display: flex; align-items: center; gap: 14px; background: var(--card-bg); border-radius: var(--radius-sm);
+            padding: 12px 16px; box-shadow: var(--shadow); border: 1px solid var(--border); transition: var(--transition);
+        }
+        .manage-item:hover { border-color: var(--primary-light); box-shadow: var(--shadow-lg); }
+        .manage-item .mi-emoji { font-size: 2rem; width: 44px; text-align: center; flex-shrink: 0; }
+        .manage-item .mi-info { flex: 1; min-width: 0; }
+        .manage-item .mi-name { font-weight: 700; font-size: 0.95rem; }
+        .manage-item .mi-meta { font-size: 0.8rem; color: var(--text-light); display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+        .manage-item .mi-price { font-weight: 700; color: var(--primary-dark); font-size: 1.1rem; white-space: nowrap; }
+        .manage-item .mi-price::before { content: '¥'; font-size: 0.8rem; }
+        .manage-item .mi-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+        .order-history-list { display: flex; flex-direction: column; gap: 12px; }
+        .order-history-card {
+            background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow);
+            border: 1px solid var(--border); transition: var(--transition);
+        }
+        .order-history-card:hover { box-shadow: var(--shadow-lg); border-color: var(--primary-light); }
+        .oh-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .oh-order-number { font-weight: 700; color: var(--primary-dark); font-size: 0.9rem; }
+        .oh-date { font-size: 0.8rem; color: var(--text-light); }
+        .oh-total { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+        .oh-total::before { content: '¥'; font-size: 0.8rem; }
+        .oh-items { display: flex; flex-wrap: wrap; gap: 6px; }
+        .oh-item-tag {
+            background: var(--primary-light); border-radius: 16px; padding: 4px 12px; font-size: 0.8rem;
+            display: flex; align-items: center; gap: 4px; border: 1px solid var(--border);
+        }
+        .oh-item-tag .oh-qty { font-weight: 700; color: var(--primary-dark); background: #fff; border-radius: 10px; padding: 1px 6px; font-size: 0.7rem; }
+        .oh-status { font-size: 0.75rem; padding: 3px 10px; border-radius: 16px; font-weight: 600; }
+        .oh-status.completed { background: #e8f5e9; color: #2e7d32; }
+
+        .toast-container { position: fixed; top: 80px; right: 16px; z-index: 1000; display: flex; flex-direction: column; gap: 8px; }
+        .toast {
+            background: var(--secondary); color: #fff; padding: 12px 18px; border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-lg); font-size: 0.88rem; font-weight: 500; animation: toastIn 0.35s ease;
+            display: flex; align-items: center; gap: 8px; max-width: 320px; border-left: 4px solid var(--accent);
+        }
+        .toast.toast-error { border-left-color: var(--danger); }
+        .toast.toast-warning { border-left-color: var(--warning); }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+        .toast.out { animation: toastOut 0.3s ease forwards; }
+        @keyframes toastOut { to { opacity: 0; transform: translateX(60px); } }
+
+        .order-success { text-align: center; padding: 10px 0; }
+        .order-success .os-icon { font-size: 4rem; margin-bottom: 10px; animation: bounce 0.6s ease; }
+        @keyframes bounce { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+        .order-success h3 { font-size: 1.3rem; color: var(--accent); margin-bottom: 6px; }
+        .order-success p { color: var(--text-light); font-size: 0.9rem; }
+        .order-number { font-weight: 700; color: var(--primary); font-size: 1.2rem; letter-spacing: 1px; }
+
+        .search-bar {
+            display: flex; align-items: center; gap: 8px; background: var(--card-bg); border-radius: 30px;
+            padding: 8px 16px; box-shadow: var(--shadow); border: 2px solid var(--border); transition: var(--transition); margin-bottom: 12px;
+        }
+        .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(46,125,50,0.1); }
+        .search-bar .search-icon { font-size: 1.1rem; color: var(--text-light); }
+        .search-bar input { flex: 1; border: none; outline: none; font-size: 0.95rem; font-family: var(--font); background: transparent; color: var(--text); min-width: 0; }
+        .search-bar input::placeholder { color: #b0bec5; }
+
+        @media (max-width: 700px) {
+            .header { flex-direction: column; align-items: stretch; }
+            .header-left { justify-content: center; }
+            .header-right { justify-content: center; }
+            .mode-switch { justify-content: center; }
+            .mode-btn { padding: 6px 10px; font-size: 0.75rem; }
+            .balance-display { padding: 4px 12px; font-size: 0.8rem; justify-content: center; }
+        }
+        @media (max-width: 600px) {
+            .header-title { font-size: 1.1rem; }
+            .header-logo { font-size: 26px; }
+            .main { padding: 10px 10px 110px; }
+            .dish-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+            .dish-card { padding: 12px; min-height: 130px; border-radius: 10px; }
+            .dish-emoji { font-size: 2.2rem; }
+            .dish-name { font-size: 0.9rem; }
+            .dish-price { font-size: 1.05rem; }
+            .cart-bar { padding: 8px 16px; gap: 10px; bottom: 10px; border-radius: 40px; }
+            .cart-bar .cart-total { font-size: 1rem; }
+            .modal { padding: 18px; max-width: 95vw; border-radius: 16px; }
+            .manage-item { padding: 10px 12px; gap: 10px; flex-wrap: wrap; }
+            .manage-item .mi-emoji { font-size: 1.6rem; width: 36px; }
+            .manage-item .mi-actions { width: 100%; justify-content: flex-end; }
+            .order-history-card { padding: 12px; }
+        }
+        @media (max-width: 360px) {
+            .dish-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+            .dish-card { padding: 8px; min-height: 110px; gap: 4px; }
+            .dish-emoji { font-size: 1.8rem; }
+            .dish-name { font-size: 0.82rem; }
+            .dish-price { font-size: 0.95rem; }
+            .dish-desc { font-size: 0.7rem; }
+            .btn { padding: 8px 16px; font-size: 0.8rem; }
+        }
+        .cart-items::-webkit-scrollbar, .emoji-picker::-webkit-scrollbar { width: 4px; }
+        .cart-items::-webkit-scrollbar-thumb, .emoji-picker::-webkit-scrollbar-thumb { background: #c8e6c9; border-radius: 4px; }
+        .hidden-input { display: none; }
+        .password-modal-input { margin-bottom: 8px; }
+        .error-text { color: var(--danger); font-size: 0.85rem; text-align: center; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-left">
+            <span class="header-logo">🌿</span>
+            <div>
+                <div class="header-title">小食厨记</div>
+                <div class="header-subtitle">好友点餐 · 轻松管理</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="balance-display" title="余额无限">
+                <span class="balance-icon">💰</span>
+                <span>余额：</span>
+                <span class="balance-amount">∞ 无限</span>
+            </div>
+            <div class="mode-switch" id="modeSwitch">
+                <button class="mode-btn active" data-mode="order" id="btnOrderMode">🛎️ 点餐</button>
+                <button class="mode-btn" data-mode="history" id="btnHistoryMode">📋 订单</button>
+                <button class="mode-btn" data-mode="manage" id="btnManageMode">⚙️ 管理</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="view active" id="orderView">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="搜索菜品..." autocomplete="off">
+            </div>
+            <div class="category-nav" id="categoryNav"></div>
+            <div class="dish-grid" id="dishGrid"></div>
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <div class="empty-icon">🍳</div>
+                <h3>还没有菜品</h3>
+                <p>切换到「管理」模式添加菜品，或从JSON文件导入菜品数据。</p>
+                <button class="btn btn-primary" onclick="switchMode('manage')">去添加菜品</button>
+            </div>
+        </div>
+
+        <div class="view" id="historyView">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+                <h2 style="font-size:1.2rem;font-weight:700;">📋 订单记录</h2>
+                <button class="btn btn-sm btn-danger" id="btnClearOrders">🗑️ 清空订单</button>
+            </div>
+            <div class="order-history-list" id="orderHistoryList"></div>
+            <div class="empty-state" id="historyEmptyState" style="display:none;">
+                <div class="empty-icon">📭</div>
+                <h3>暂无订单记录</h3>
+                <p>完成点餐后，订单信息将显示在这里。</p>
+            </div>
+        </div>
+
+        <div class="view" id="manageView">
+            <div class="manage-header">
+                <h2 style="font-size:1.2rem;font-weight:700;">📋 菜品管理</h2>
+                <div class="manage-tools">
+                    <button class="btn btn-sm btn-primary" id="btnAddDish">➕ 添加菜品</button>
+                    <button class="btn btn-sm btn-outline" id="btnExport">📤 导出</button>
+                    <button class="btn btn-sm btn-outline" id="btnImport">📥 导入</button>
+                    <button class="btn btn-sm btn-secondary" id="btnChangePassword">🔑 修改密码</button>
+                </div>
+            </div>
+            <div class="manage-list" id="manageList"></div>
+            <div class="empty-state" id="manageEmptyState" style="display:none;">
+                <div class="empty-icon">📝</div>
+                <h3>暂无菜品</h3>
+                <p>点击上方「添加菜品」开始创建您的菜单，或从JSON文件导入。</p>
+            </div>
+            <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-danger" id="btnClearAll">🗑️ 清空所有菜品</button>
+            </div>
+        </div>
+    </main>
+
+    <div class="cart-bar" id="cartBar" style="display:none;">
+        <span class="cart-icon">🛒 <span class="cart-count-badge" id="cartBadge">0</span></span>
+        <span class="cart-label">已点</span>
+        <span class="cart-total" id="cartTotal">0.00</span>
+        <span style="font-size:0.85rem;opacity:0.7;">›</span>
+    </div>
+
+    <div id="modalContainer"></div>
+    <div class="toast-container" id="toastContainer"></div>
+    <input type="file" id="fileInput" class="hidden-input" accept=".json,application/json">
+
+    <script>
+        (function() {
+            const STORAGE_KEY = 'dishWorkbenchData_v4';
+            const ORDER_KEY = 'dishWorkbenchOrders_v4';
+            const PASSWORD_KEY = 'dishWorkbenchPassword_v4';
+            const DEFAULT_PASSWORD = '1234';
+
+            const DEFAULT_EMOJIS = [
+                '🍚','🍜','🍝','🍕','🍔','🍟','🌭','🍿','🥓','🥩','🍗','🍖','🌯','🌮','🥙','🥗','🍲','🍛','🍣','🍤','🍥','🥘','🍡','🍧','🍨','🍦','🥧','🍰','🎂','🍮','🍬','🍭','🍫','🍩','🍪','🥜','🌰','🍺','🍻','🥂','🍷','🥤','🍵','☕','🧃','🥛','🍶','🍾','🧋','🫖'
+            ];
+            const DEFAULT_CATEGORIES = ['热菜', '凉菜', '小吃', '酒水', '主食', '甜点', '其他'];
+
+            let state = {
+                dishes: [],
+                cart: [],
+                orders: [],
+                currentCategory: '全部',
+                searchQuery: '',
+                currentMode: 'order',
+                editingDishId: null,
+                balance: Infinity,
+                isAuthenticated: false,  // 本次会话是否已通过密码验证
+                adminPassword: DEFAULT_PASSWORD,  // 实际密码，从localStorage加载
+            };
+
+            const orderView = document.getElementById('orderView');
+            const historyView = document.getElementById('historyView');
+            const manageView = document.getElementById('manageView');
+            const dishGrid = document.getElementById('dishGrid');
+            const categoryNav = document.getElementById('categoryNav');
+            const emptyState = document.getElementById('emptyState');
+            const manageList = document.getElementById('manageList');
+            const manageEmptyState = document.getElementById('manageEmptyState');
+            const orderHistoryList = document.getElementById('orderHistoryList');
+            const historyEmptyState = document.getElementById('historyEmptyState');
+            const cartBar = document.getElementById('cartBar');
+            const cartBadge = document.getElementById('cartBadge');
+            const cartTotal = document.getElementById('cartTotal');
+            const searchInput = document.getElementById('searchInput');
+            const modalContainer = document.getElementById('modalContainer');
+            const toastContainer = document.getElementById('toastContainer');
+            const fileInput = document.getElementById('fileInput');
+            const btnOrderMode = document.getElementById('btnOrderMode');
+            const btnHistoryMode = document.getElementById('btnHistoryMode');
+            const btnManageMode = document.getElementById('btnManageMode');
+            const btnAddDish = document.getElementById('btnAddDish');
+            const btnExport = document.getElementById('btnExport');
+            const btnImport = document.getElementById('btnImport');
+            const btnClearAll = document.getElementById('btnClearAll');
+            const btnClearOrders = document.getElementById('btnClearOrders');
+            const btnChangePassword = document.getElementById('btnChangePassword');
+
+            function generateId() { return 'dish_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6); }
+            function generateOrderNumber() {
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+                return `#${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+            }
+            function formatPrice(price) { return (Math.round(price * 100) / 100).toFixed(2); }
+            function formatDate(dateStr) {
+                const d = new Date(dateStr);
+                const pad = (n) => String(n).padStart(2, '0');
+                return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            }
+            function escapeHtml(str) { const div = document.createElement('div'); div.textContent = str; return div.innerHTML; }
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast ${type === 'error' ? 'toast-error' : type === 'warning' ? 'toast-warning' : ''}`;
+                toast.innerHTML = `<span>${type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '✅'}</span> ${message}`;
+                toastContainer.appendChild(toast);
+                setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 350); }, 2500);
+            }
+
+            // ===== 存储函数 =====
+            function saveDishesToStorage() {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: '4.0', dishes: state.dishes, categories: getCategories() })); } catch(e) {}
+            }
+            function saveOrdersToStorage() {
+                try { localStorage.setItem(ORDER_KEY, JSON.stringify(state.orders)); } catch(e) {}
+            }
+            function loadDishesFromStorage() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const data = JSON.parse(raw);
+                        if (data && Array.isArray(data.dishes)) {
+                            state.dishes = data.dishes.filter(d => d && d.id && d.name && typeof d.price === 'number');
+                            state.dishes.forEach(d => { if (!d.emoji) d.emoji='🍽️'; if(!d.category) d.category='其他'; if(!d.description) d.description=''; });
+                        }
+                    }
+                } catch(e) { state.dishes = []; }
+            }
+            function loadOrdersFromStorage() {
+                try {
+                    const raw = localStorage.getItem(ORDER_KEY);
+                    if (raw) {
+                        const orders = JSON.parse(raw);
+                        if (Array.isArray(orders)) state.orders = orders.filter(o => o && o.orderNumber && Array.isArray(o.items) && typeof o.total === 'number');
+                    }
+                } catch(e) { state.orders = []; }
+            }
+            function loadPasswordFromStorage() {
+                try {
+                    const saved = localStorage.getItem(PASSWORD_KEY);
+                    if (saved) state.adminPassword = saved;
+                    else state.adminPassword = DEFAULT_PASSWORD;
+                } catch(e) { state.adminPassword = DEFAULT_PASSWORD; }
+            }
+            function savePasswordToStorage(newPass) {
+                try { localStorage.setItem(PASSWORD_KEY, newPass); state.adminPassword = newPass; } catch(e) {}
+            }
+
+            function getCategories() {
+                const cats = new Set(DEFAULT_CATEGORIES);
+                state.dishes.forEach(d => { if (d.category && d.category.trim()) cats.add(d.category.trim()); });
+                return Array.from(cats);
+            }
+
+            // ===== 密码验证模态框 =====
+            function showPasswordPrompt(targetMode) {
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal" style="max-width:360px;">
+                        <div class="modal-header">
+                            <span class="modal-title">🔐 需要密码</span>
+                            <button class="modal-close" aria-label="关闭">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <p style="text-align:center;color:var(--text-light);">请输入管理员密码以访问「${targetMode === 'manage' ? '管理' : '订单'}」界面</p>
+                            <div class="form-group password-modal-input">
+                                <input type="password" id="passwordInput" placeholder="请输入密码" autocomplete="off" />
+                            </div>
+                            <div class="error-text" id="passwordError" style="display:none;">密码错误，请重试</div>
+                            <button class="btn btn-primary" style="width:100%;justify-content:center;" id="btnConfirmPassword">确认</button>
+                        </div>
+                    </div>
+                `;
+                modalContainer.appendChild(overlay);
+                const input = overlay.querySelector('#passwordInput');
+                const errorEl = overlay.querySelector('#passwordError');
+                overlay.querySelector('.modal-close').addEventListener('click', () => closeModal());
+                overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+                overlay.querySelector('#btnConfirmPassword').addEventListener('click', () => {
+                    const entered = input.value.trim();
+                    if (entered === state.adminPassword) {
+                        state.isAuthenticated = true;
+                        closeModal();
+                        // 验证成功后切换到目标模式
+                        state.currentMode = targetMode;
+                        renderAll();
+                        updateCartBar();
+                        updateModeButtons();
+                        showToast('验证成功', 'success');
+                    } else {
+                        errorEl.style.display = 'block';
+                        input.value = '';
+                        input.focus();
+                    }
+                });
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') overlay.querySelector('#btnConfirmPassword').click(); });
+                setTimeout(() => input.focus(), 100);
+            }
+
+            // ===== 修改密码模态框 =====
+            function showChangePasswordModal() {
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal" style="max-width:380px;">
+                        <div class="modal-header">
+                            <span class="modal-title">🔑 修改密码</span>
+                            <button class="modal-close" aria-label="关闭">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>当前密码</label>
+                                <input type="password" id="oldPasswordInput" placeholder="请输入当前密码" />
+                            </div>
+                            <div class="form-group">
+                                <label>新密码</label>
+                                <input type="password" id="newPasswordInput" placeholder="请输入新密码（至少4位）" />
+                            </div>
+                            <div class="form-group">
+                                <label>确认新密码</label>
+                                <input type="password" id="confirmNewPasswordInput" placeholder="再次输入新密码" />
+                            </div>
+                            <div class="error-text" id="changePwdError" style="display:none;"></div>
+                            <button class="btn btn-primary" style="width:100%;justify-content:center;" id="btnConfirmChangePwd">确认修改</button>
+                        </div>
+                    </div>
+                `;
+                modalContainer.appendChild(overlay);
+                overlay.querySelector('.modal-close').addEventListener('click', () => closeModal());
+                overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+                overlay.querySelector('#btnConfirmChangePwd').addEventListener('click', () => {
+                    const oldPwd = overlay.querySelector('#oldPasswordInput').value.trim();
+                    const newPwd = overlay.querySelector('#newPasswordInput').value.trim();
+                    const confirmPwd = overlay.querySelector('#confirmNewPasswordInput').value.trim();
+                    const errorEl = overlay.querySelector('#changePwdError');
+                    if (oldPwd !== state.adminPassword) {
+                        errorEl.textContent = '当前密码错误';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                    if (newPwd.length < 4) {
+                        errorEl.textContent = '新密码至少4位';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                    if (newPwd !== confirmPwd) {
+                        errorEl.textContent = '两次输入的新密码不一致';
+                        errorEl.style.display = 'block';
+                        return;
+                    }
+                    savePasswordToStorage(newPwd);
+                    closeModal();
+                    showToast('密码修改成功', 'success');
+                });
+            }
+
+            // ===== 切换模式 (带密码保护) =====
+            function switchMode(mode) {
+                if (mode === 'order') {
+                    // 点餐界面不需要密码
+                    state.currentMode = 'order';
+                    renderAll();
+                    updateCartBar();
+                    updateModeButtons();
+                    return;
+                }
+                // history 或 manage 需要验证
+                if (state.isAuthenticated) {
+                    state.currentMode = mode;
+                    renderAll();
+                    updateCartBar();
+                    updateModeButtons();
+                } else {
+                    showPasswordPrompt(mode);
+                }
+            }
+
+            function updateModeButtons() {
+                [btnOrderMode, btnHistoryMode, btnManageMode].forEach(btn => btn.classList.remove('active','manage-active','order-history-active'));
+                if (state.currentMode === 'order') btnOrderMode.classList.add('active');
+                else if (state.currentMode === 'history') btnHistoryMode.classList.add('active','order-history-active');
+                else if (state.currentMode === 'manage') btnManageMode.classList.add('active','manage-active');
+                // 显示/隐藏视图
+                orderView.classList.toggle('active', state.currentMode === 'order');
+                historyView.classList.toggle('active', state.currentMode === 'history');
+                manageView.classList.toggle('active', state.currentMode === 'manage');
+            }
+
+            btnOrderMode.addEventListener('click', () => switchMode('order'));
+            btnHistoryMode.addEventListener('click', () => switchMode('history'));
+            btnManageMode.addEventListener('click', () => switchMode('manage'));
+
+            // ===== 渲染函数 =====
+            function renderAll() {
+                if (state.currentMode === 'order') {
+                    renderCategoryNav();
+                    renderDishGrid();
+                    renderEmptyState();
+                } else if (state.currentMode === 'history') {
+                    renderOrderHistory();
+                } else if (state.currentMode === 'manage') {
+                    renderManageList();
+                    renderManageEmptyState();
+                }
+                updateCartBar();
+            }
+
+            function renderCategoryNav() {
+                const categories = getCategories();
+                const allCount = state.dishes.length;
+                let html = `<button class="cat-btn ${state.currentCategory === '全部' ? 'active' : ''}" data-cat="全部">全部 <span class="cat-count">(${allCount})</span></button>`;
+                categories.forEach(cat => {
+                    const count = state.dishes.filter(d => d.category === cat).length;
+                    if (count > 0) html += `<button class="cat-btn ${state.currentCategory === cat ? 'active' : ''}" data-cat="${cat}">${cat} <span class="cat-count">(${count})</span></button>`;
+                });
+                categoryNav.innerHTML = html;
+                categoryNav.querySelectorAll('.cat-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        state.currentCategory = btn.dataset.cat;
+                        renderCategoryNav();
+                        renderDishGrid();
+                        renderEmptyState();
+                    });
+                });
+            }
+
+            function getFilteredDishes() {
+                let filtered = [...state.dishes];
+                if (state.currentCategory !== '全部') filtered = filtered.filter(d => d.category === state.currentCategory);
+                if (state.searchQuery.trim()) {
+                    const q = state.searchQuery.trim().toLowerCase();
+                    filtered = filtered.filter(d => d.name.toLowerCase().includes(q) || (d.description && d.description.toLowerCase().includes(q)) || (d.category && d.category.toLowerCase().includes(q)));
+                }
+                return filtered;
+            }
+
+            function renderDishGrid() {
+                const filtered = getFilteredDishes();
+                if (filtered.length === 0) { dishGrid.innerHTML = ''; return; }
+                let html = '';
+                filtered.forEach(dish => {
+                    html += `<div class="dish-card" data-dish-id="${dish.id}" role="button" tabindex="0">
+                        <span class="dish-emoji">${dish.emoji || '🍽️'}</span>
+                        <div class="dish-name">${escapeHtml(dish.name)}</div>
+                        ${dish.description ? `<div class="dish-desc">${escapeHtml(dish.description)}</div>` : ''}
+                        <div class="dish-price">${formatPrice(dish.price)}</div>
+                    </div>`;
+                });
+                dishGrid.innerHTML = html;
+                dishGrid.querySelectorAll('.dish-card').forEach(card => {
+                    card.addEventListener('click', () => addToCart(card.dataset.dishId));
+                });
+            }
+
+            function renderEmptyState() {
+                const filtered = getFilteredDishes();
+                if (filtered.length === 0) {
+                    emptyState.style.display = 'block';
+                    if (state.dishes.length === 0) {
+                        emptyState.querySelector('h3').textContent = '还没有菜品';
+                        emptyState.querySelector('p').textContent = '切换到「管理」模式添加菜品，或从JSON文件导入菜品数据。';
+                        emptyState.querySelector('.btn').style.display = 'inline-flex';
+                    } else {
+                        emptyState.querySelector('h3').textContent = '没有找到匹配的菜品';
+                        emptyState.querySelector('p').textContent = '请尝试其他分类或搜索关键词。';
+                        emptyState.querySelector('.btn').style.display = 'none';
+                    }
+                } else {
+                    emptyState.style.display = 'none';
+                }
+            }
+
+            function renderManageList() {
+                if (state.dishes.length === 0) { manageList.innerHTML = ''; return; }
+                let html = '';
+                state.dishes.forEach(dish => {
+                    html += `<div class="manage-item">
+                        <span class="mi-emoji">${dish.emoji || '🍽️'}</span>
+                        <div class="mi-info">
+                            <div class="mi-name">${escapeHtml(dish.name)}</div>
+                            <div class="mi-meta"><span>📂 ${escapeHtml(dish.category)}</span>${dish.description ? `<span>📝 ${escapeHtml(dish.description)}</span>` : ''}</div>
+                        </div>
+                        <span class="mi-price">${formatPrice(dish.price)}</span>
+                        <div class="mi-actions">
+                            <button class="btn btn-xs btn-outline btn-edit-dish" data-edit-id="${dish.id}">✏️</button>
+                            <button class="btn btn-xs btn-danger btn-delete-dish" data-delete-id="${dish.id}">🗑️</button>
+                        </div>
+                    </div>`;
+                });
+                manageList.innerHTML = html;
+                manageList.querySelectorAll('.btn-edit-dish').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); openDishModal(btn.dataset.editId); }));
+                manageList.querySelectorAll('.btn-delete-dish').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); confirmDeleteDish(btn.dataset.deleteId); }));
+            }
+
+            function renderManageEmptyState() { manageEmptyState.style.display = state.dishes.length === 0 ? 'block' : 'none'; }
+
+            function renderOrderHistory() {
+                if (state.orders.length === 0) {
+                    orderHistoryList.innerHTML = '';
+                    historyEmptyState.style.display = 'block';
+                    return;
+                }
+                historyEmptyState.style.display = 'none';
+                let html = '';
+                state.orders.slice().reverse().forEach(order => {
+                    const itemsHtml = order.items.map(item => `<span class="oh-item-tag">${item.emoji} ${escapeHtml(item.name)} <span class="oh-qty">x${item.quantity}</span></span>`).join('');
+                    html += `<div class="order-history-card">
+                        <div class="oh-header">
+                            <span class="oh-order-number">${escapeHtml(order.orderNumber)}</span>
+                            <span class="oh-date">${formatDate(order.createdAt)}</span>
+                            <span class="oh-total">${formatPrice(order.total)}</span>
+                            <span class="oh-status completed">✅ 已完成</span>
+                        </div>
+                        <div class="oh-items">${itemsHtml}</div>
+                    </div>`;
+                });
+                orderHistoryList.innerHTML = html;
+            }
+
+            // ===== 购物车功能 =====
+            function addToCart(dishId) {
+                const dish = state.dishes.find(d => d.id === dishId);
+                if (!dish) return;
+                const existing = state.cart.find(item => item.dishId === dishId);
+                if (existing) existing.quantity += 1;
+                else state.cart.push({ dishId: dish.id, name: dish.name, price: dish.price, emoji: dish.emoji || '🍽️', quantity: 1 });
+                updateCartBar();
+                showToast(`已添加 ${dish.name}`, 'success');
+            }
+            function removeFromCart(dishId) { state.cart = state.cart.filter(item => item.dishId !== dishId); updateCartBar(); }
+            function changeCartQuantity(dishId, delta) {
+                const item = state.cart.find(i => i.dishId === dishId);
+                if (!item) return;
+                item.quantity += delta;
+                if (item.quantity <= 0) removeFromCart(dishId);
+                updateCartBar();
+            }
+            function getCartTotal() { return state.cart.reduce((sum, item) => sum + item.price * item.quantity, 0); }
+            function getCartCount() { return state.cart.reduce((sum, item) => sum + item.quantity, 0); }
+            function updateCartBar() {
+                const count = getCartCount();
+                const total = getCartTotal();
+                if (count > 0) {
+                    cartBar.style.display = 'flex';
+                    cartBadge.textContent = count;
+                    cartTotal.textContent = formatPrice(total);
+                } else {
+                    cartBar.style.display = 'none';
+                }
+            }
+            cartBar.addEventListener('click', () => openCartModal());
+
+            function openCartModal() {
+                if (state.cart.length === 0) { showToast('购物车是空的', 'warning'); return; }
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal" style="max-width:420px;">
+                        <div class="modal-header"><span class="modal-title">🛒 我的订单</span><button class="modal-close">×</button></div>
+                        <div class="modal-body">
+                            <div class="cart-items" id="cartItemsList">
+                                ${state.cart.map(item => `
+                                    <div class="cart-item">
+                                        <span class="ci-emoji">${item.emoji}</span>
+                                        <div class="ci-info"><div class="ci-name">${escapeHtml(item.name)}</div><div class="ci-price">单价 ¥${formatPrice(item.price)}</div></div>
+                                        <div class="ci-controls">
+                                            <button class="ci-minus" data-minus="${item.dishId}">−</button>
+                                            <span class="ci-qty">${item.quantity}</span>
+                                            <button class="ci-plus" data-plus="${item.dishId}">+</button>
+                                            <button class="ci-remove" data-remove="${item.dishId}">✕</button>
+                                        </div>
+                                    </div>`).join('')}
+                            </div>
+                            <div class="cart-summary"><span>合计</span><span class="total-amount">${formatPrice(getCartTotal())}</span></div>
+                            <button class="btn btn-primary" id="btnSubmitOrder" style="width:100%;justify-content:center;padding:14px;">✅ 提交订单（余额无限）</button>
+                        </div>
+                    </div>`;
+                modalContainer.appendChild(overlay);
+                overlay.querySelector('.modal-close').addEventListener('click', closeModal);
+                overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+                overlay.querySelectorAll('[data-plus]').forEach(btn => btn.addEventListener('click', () => { changeCartQuantity(btn.dataset.plus, 1); refreshCart(overlay); }));
+                overlay.querySelectorAll('[data-minus]').forEach(btn => btn.addEventListener('click', () => { changeCartQuantity(btn.dataset.minus, -1); refreshCart(overlay); }));
+                overlay.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', () => { removeFromCart(btn.dataset.remove); refreshCart(overlay); if(state.cart.length===0){ closeModal(); updateCartBar(); } }));
+                overlay.querySelector('#btnSubmitOrder').addEventListener('click', () => submitOrder());
+
+                function refreshCart(ov) {
+                    const list = ov.querySelector('#cartItemsList');
+                    list.innerHTML = state.cart.map(item => `
+                        <div class="cart-item">
+                            <span class="ci-emoji">${item.emoji}</span>
+                            <div class="ci-info"><div class="ci-name">${escapeHtml(item.name)}</div><div class="ci-price">单价 ¥${formatPrice(item.price)}</div></div>
+                            <div class="ci-controls">
+                                <button class="ci-minus" data-minus="${item.dishId}">−</button>
+                                <span class="ci-qty">${item.quantity}</span>
+                                <button class="ci-plus" data-plus="${item.dishId}">+</button>
+                                <button class="ci-remove" data-remove="${item.dishId}">✕</button>
+                            </div>
+                        </div>`).join('');
+                    list.querySelectorAll('[data-plus]').forEach(btn => btn.addEventListener('click', () => { changeCartQuantity(btn.dataset.plus, 1); refreshCart(ov); }));
+                    list.querySelectorAll('[data-minus]').forEach(btn => btn.addEventListener('click', () => { changeCartQuantity(btn.dataset.minus, -1); refreshCart(ov); }));
+                    list.querySelectorAll('[data-remove]').forEach(btn => btn.addEventListener('click', () => { removeFromCart(btn.dataset.remove); refreshCart(ov); if(state.cart.length===0){ closeModal(); updateCartBar(); } }));
+                    ov.querySelector('.total-amount').textContent = formatPrice(getCartTotal());
+                    updateCartBar();
+                }
+            }
+
+            function closeModal() { modalContainer.innerHTML = ''; }
+
+            function submitOrder() {
+                const order = { orderNumber: generateOrderNumber(), items: state.cart.map(item => ({...item})), total: getCartTotal(), createdAt: new Date().toISOString(), status: 'completed' };
+                state.orders.push(order);
+                saveOrdersToStorage();
+                state.cart = [];
+                updateCartBar();
+                closeModal();
+                const successOverlay = document.createElement('div');
+                successOverlay.className = 'modal-overlay';
+                successOverlay.innerHTML = `
+                    <div class="modal" style="max-width:360px;text-align:center;">
+                        <div class="order-success">
+                            <div class="os-icon">🎉</div>
+                            <h3>下单成功！</h3>
+                            <p>订单号：<span class="order-number">${order.orderNumber}</span></p>
+                            <p style="margin-top:4px;font-size:0.85rem;">总金额：<strong>¥${formatPrice(order.total)}</strong></p>
+                            <p style="margin-top:8px;color:var(--accent);font-size:0.85rem;">💰 余额：无限，无需支付</p>
+                            <p style="margin-top:8px;color:#bbb;font-size:0.8rem;">订单已记录</p>
+                        </div>
+                        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:16px;" id="btnOrderDone">好的</button>
+                    </div>`;
+                modalContainer.appendChild(successOverlay);
+                successOverlay.querySelector('#btnOrderDone').addEventListener('click', closeModal);
+                successOverlay.addEventListener('click', (e) => { if(e.target === successOverlay) closeModal(); });
+                if (state.currentMode === 'history') renderOrderHistory();
+            }
+
+            // ===== 菜品管理 =====
+            function openDishModal(dishId = null) {
+                state.editingDishId = dishId;
+                const dish = dishId ? state.dishes.find(d => d.id === dishId) : null;
+                const isEdit = !!dish;
+                const categories = getCategories();
+                const selectedEmoji = dish?.emoji || '🍽️';
+                const selectedCategory = dish?.category || '其他';
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal" style="max-width:460px;">
+                        <div class="modal-header"><span class="modal-title">${isEdit ? '✏️ 编辑菜品' : '➕ 添加菜品'}</span><button class="modal-close">×</button></div>
+                        <div class="modal-body">
+                            <div class="form-row">
+                                <div class="form-group" style="flex:2;"><label>菜品名称 *</label><input type="text" id="dishNameInput" value="${dish ? escapeHtml(dish.name) : ''}"></div>
+                                <div class="form-group" style="flex:1;"><label>价格 (¥) *</label><input type="number" id="dishPriceInput" step="0.01" min="0" value="${dish ? dish.price : ''}"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>分类</label>
+                                <select id="dishCategorySelect">
+                                    ${categories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === selectedCategory ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
+                                    <option value="__new__">➕ 新分类...</option>
+                                </select>
+                                <input type="text" id="dishNewCategoryInput" placeholder="新分类名称" style="display:none;margin-top:6px;">
+                            </div>
+                            <div class="form-group"><label>描述（可选）</label><textarea id="dishDescInput" rows="2">${dish ? escapeHtml(dish.description) : ''}</textarea></div>
+                            <div class="form-group"><label>图标</label><div class="emoji-picker" id="emojiPicker">${DEFAULT_EMOJIS.map(e => `<button type="button" class="emoji-option ${e === selectedEmoji ? 'selected' : ''}" data-emoji="${e}">${e}</button>`).join('')}</div></div>
+                            <div style="display:flex;gap:10px;margin-top:6px;">
+                                <button class="btn btn-primary" style="flex:1;" id="btnSaveDish">${isEdit ? '💾 保存' : '➕ 添加'}</button>
+                                <button class="btn btn-outline" style="flex:1;" id="btnCancelDish">取消</button>
+                            </div>
+                        </div>
+                    </div>`;
+                modalContainer.appendChild(overlay);
+                overlay.querySelector('.modal-close').addEventListener('click', closeModal);
+                overlay.querySelector('#btnCancelDish').addEventListener('click', closeModal);
+                overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+                const nameInput = overlay.querySelector('#dishNameInput');
+                const priceInput = overlay.querySelector('#dishPriceInput');
+                const categorySelect = overlay.querySelector('#dishCategorySelect');
+                const newCategoryInput = overlay.querySelector('#dishNewCategoryInput');
+                const descInput = overlay.querySelector('#dishDescInput');
+                let selectedEmojiValue = selectedEmoji;
+                overlay.querySelectorAll('.emoji-option').forEach(btn => btn.addEventListener('click', () => { overlay.querySelectorAll('.emoji-option').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); selectedEmojiValue = btn.dataset.emoji; }));
+                categorySelect.addEventListener('change', () => { if(categorySelect.value === '__new__') { newCategoryInput.style.display='block'; newCategoryInput.focus(); } else newCategoryInput.style.display='none'; });
+                overlay.querySelector('#btnSaveDish').addEventListener('click', () => {
+                    const name = nameInput.value.trim();
+                    const price = parseFloat(priceInput.value);
+                    let category = categorySelect.value === '__new__' ? (newCategoryInput.value.trim() || '其他') : categorySelect.value;
+                    if (!name) { showToast('请输入菜品名称','error'); return; }
+                    if (isNaN(price) || price < 0) { showToast('请输入有效价格','error'); return; }
+                    if (isEdit && state.editingDishId) {
+                        const dish = state.dishes.find(d => d.id === state.editingDishId);
+                        if (dish) { dish.name=name; dish.price=Math.round(price*100)/100; dish.category=category; dish.description=descInput.value.trim(); dish.emoji=selectedEmojiValue; }
+                        showToast('已更新','success');
+                    } else {
+                        state.dishes.push({ id: generateId(), name, price: Math.round(price*100)/100, category, description: descInput.value.trim(), emoji: selectedEmojiValue });
+                        showToast('已添加','success');
+                    }
+                    state.editingDishId = null;
+                    saveDishesToStorage();
+                    closeModal();
+                    renderAll();
+                    if (state.currentCategory !== '全部' && category !== state.currentCategory) state.currentCategory = '全部';
+                    renderCategoryNav();
+                    renderDishGrid();
+                    renderEmptyState();
+                });
+                if (categorySelect.value === '__new__') newCategoryInput.style.display='block';
+            }
+
+            function confirmDeleteDish(dishId) {
+                const dish = state.dishes.find(d => d.id === dishId);
+                if (!dish) return;
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `
+                    <div class="modal" style="max-width:360px;text-align:center;">
+                        <div class="modal-header"><span class="modal-title">确认删除</span></div>
+                        <div class="modal-body"><p>确定要删除「<strong>${escapeHtml(dish.name)}</strong>」吗？</p>
+                        <div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-danger" style="flex:1;" id="btnConfirmDelete">删除</button><button class="btn btn-outline" style="flex:1;" id="btnCancelDelete">取消</button></div></div>
+                    </div>`;
+                modalContainer.appendChild(overlay);
+                overlay.querySelector('#btnConfirmDelete').addEventListener('click', () => { state.dishes = state.dishes.filter(d => d.id !== dishId); state.cart = state.cart.filter(i => i.dishId !== dishId); saveDishesToStorage(); closeModal(); renderAll(); updateCartBar(); showToast('已删除','warning'); });
+                overlay.querySelector('#btnCancelDelete').addEventListener('click', closeModal);
+                overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+            }
+
+            // ===== 导出/导入 =====
+            function exportDishes() {
+                if (state.dishes.length === 0) { showToast('没有菜品可导出','warning'); return; }
+                const data = { version:'4.0', exportedAt: new Date().toISOString(), dishes: state.dishes, categories: getCategories(), orders: state.orders };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `小食厨记数据_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                showToast('导出成功','success');
+            }
+            function importDishes(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (!data || !Array.isArray(data.dishes)) { showToast('格式无效','error'); return; }
+                        const validDishes = data.dishes.filter(d => d && d.name && typeof d.price === 'number').map(d => ({ id: generateId(), name: d.name, price: Math.round(d.price*100)/100, category: d.category || '其他', description: d.description || '', emoji: d.emoji || '🍽️' }));
+                        if (validDishes.length === 0) { showToast('无有效菜品','error'); return; }
+                        const overlay = document.createElement('div');
+                        overlay.className = 'modal-overlay';
+                        overlay.innerHTML = `
+                            <div class="modal" style="max-width:380px;text-align:center;">
+                                <div class="modal-header"><span class="modal-title">📥 导入数据</span></div>
+                                <div class="modal-body"><p>找到 ${validDishes.length} 个菜品${data.orders ? ` 和 ${data.orders.length} 条订单` : ''}</p>
+                                <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+                                    <button class="btn btn-primary" id="btnMergeImport">合并到现有</button>
+                                    <button class="btn btn-outline" id="btnReplaceImport">替换全部</button>
+                                    <button class="btn btn-secondary" id="btnCancelImport">取消</button>
+                                </div></div>
+                            </div>`;
+                        modalContainer.appendChild(overlay);
+                        overlay.querySelector('#btnMergeImport').addEventListener('click', () => { state.dishes = [...state.dishes, ...validDishes]; if(data.orders) state.orders = [...state.orders, ...data.orders.filter(o=>o&&o.orderNumber)]; saveDishesToStorage(); saveOrdersToStorage(); closeModal(); renderAll(); showToast('合并成功','success'); });
+                        overlay.querySelector('#btnReplaceImport').addEventListener('click', () => { state.dishes = [...validDishes]; state.orders = data.orders ? data.orders.filter(o=>o&&o.orderNumber) : []; state.cart=[]; saveDishesToStorage(); saveOrdersToStorage(); closeModal(); renderAll(); updateCartBar(); showToast('替换成功','success'); });
+                        overlay.querySelector('#btnCancelImport').addEventListener('click', closeModal);
+                        overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+                    } catch(err) { showToast('解析失败','error'); }
+                };
+                reader.readAsText(file);
+            }
+
+            function clearAllDishes() {
+                if (state.dishes.length === 0) { showToast('没有菜品可清空','warning'); return; }
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `<div class="modal" style="max-width:360px;text-align:center;"><div class="modal-header"><span class="modal-title">确认清空</span></div><div class="modal-body"><p>确定清空所有菜品吗？</p><div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-danger" style="flex:1;" id="btnConfirmClear">确认</button><button class="btn btn-outline" style="flex:1;" id="btnCancelClear">取消</button></div></div></div>`;
+                modalContainer.appendChild(overlay);
+                overlay.querySelector('#btnConfirmClear').addEventListener('click', () => { state.dishes=[]; state.cart=[]; saveDishesToStorage(); closeModal(); renderAll(); updateCartBar(); showToast('已清空','warning'); });
+                overlay.querySelector('#btnCancelClear').addEventListener('click', closeModal);
+                overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+            }
+            function clearAllOrders() {
+                if (state.orders.length === 0) { showToast('没有订单记录','warning'); return; }
+                const overlay = document.createElement('div');
+                overlay.className = 'modal-overlay';
+                overlay.innerHTML = `<div class="modal" style="max-width:360px;text-align:center;"><div class="modal-header"><span class="modal-title">确认清空订单</span></div><div class="modal-body"><p>确定清空所有订单记录吗？</p><div style="display:flex;gap:10px;margin-top:16px;"><button class="btn btn-danger" style="flex:1;" id="btnConfirmClearOrders">确认</button><button class="btn btn-outline" style="flex:1;" id="btnCancelClearOrders">取消</button></div></div></div>`;
+                modalContainer.appendChild(overlay);
+                overlay.querySelector('#btnConfirmClearOrders').addEventListener('click', () => { state.orders=[]; saveOrdersToStorage(); closeModal(); renderOrderHistory(); showToast('已清空','warning'); });
+                overlay.querySelector('#btnCancelClearOrders').addEventListener('click', closeModal);
+                overlay.addEventListener('click', (e) => { if(e.target === overlay) closeModal(); });
+            }
+
+            searchInput.addEventListener('input', () => { state.searchQuery = searchInput.value; renderDishGrid(); renderEmptyState(); });
+            btnAddDish.addEventListener('click', () => openDishModal(null));
+            btnExport.addEventListener('click', exportDishes);
+            btnImport.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => { if(fileInput.files[0]) { importDishes(fileInput.files[0]); fileInput.value=''; } });
+            btnClearAll.addEventListener('click', clearAllDishes);
+            btnClearOrders.addEventListener('click', clearAllOrders);
+            btnChangePassword.addEventListener('click', showChangePasswordModal);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+                if ((e.ctrlKey || e.metaKey) && e.key === 'e') { e.preventDefault(); switchMode(state.currentMode === 'order' ? 'manage' : 'order'); }
+                if ((e.ctrlKey || e.metaKey) && e.key === 'h') { e.preventDefault(); switchMode('history'); }
+            });
+
+            function init() {
+                loadDishesFromStorage();
+                loadOrdersFromStorage();
+                loadPasswordFromStorage();
+                state.currentCategory = '全部';
+                state.currentMode = 'order';
+                state.isAuthenticated = false;
+                renderAll();
+                updateModeButtons();
+                updateCartBar();
+            }
+            init();
+
+            window.switchMode = switchMode;
+            window.openDishModal = openDishModal;
+            window.exportDishes = exportDishes;
+            window.importDishes = importDishes;
+            window.clearAllDishes = clearAllDishes;
+            window.clearAllOrders = clearAllOrders;
+        })();
+    </script>
+</body>
+</html>
